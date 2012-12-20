@@ -101,10 +101,11 @@ public class SimpleEcoSigns extends JavaPlugin implements Listener {
             		if(econ.getBalance(p.getName()) >= Double.valueOf(s.getLine(3).replace("$", ""))) {
             			econ.withdrawPlayer(p.getName(), Double.valueOf(s.getLine(3).replace("$", "")));
             			if(p.getInventory().firstEmpty() == -1) {
-            				p.sendMessage(ChatColor.RED + "You do not have enough inventory space.");
-            				return;
+            				p.sendMessage(ChatColor.RED + "You do not have enough inventory space. The items will be dropped on the ground.");
+            				p.getWorld().dropItemNaturally(p.getLocation(), nameToItemStack(s.getLine(2), Integer.valueOf(s.getLine(1))));
+            			} else {
+            				p.getInventory().addItem(nameToItemStack(s.getLine(2), Integer.valueOf(s.getLine(1))));
             			}
-            			p.getInventory().addItem(nameToItemStack(s.getLine(2), Integer.valueOf(s.getLine(1))));
             			p.sendMessage(ChatColor.GREEN + "Item purchased.");
             		} else {
             			p.sendMessage(ChatColor.RED + "You do not have enough funds.");
@@ -116,25 +117,31 @@ public class SimpleEcoSigns extends JavaPlugin implements Listener {
             		ItemStack[] i = p.getInventory().getContents();
             		ItemStack l = nameToItemStack(s.getLine(2), Integer.valueOf(s.getLine(1)));
             		ItemStack tmp;
+            		int amtavail = 0;
                     for (ItemStack item : i) {
                     	if(item != null) {
-                    		if(item.getAmount() >= Integer.valueOf(s.getLine(1)) && item.getType() == l.getType() && item.getDurability() == l.getDurability()) {
-                    			// Check the amount carefully.
+                    		if(item.getType() == l.getType() && item.getDurability() == l.getDurability()) {
+                    			amtavail += item.getAmount();
                     			p.getInventory().remove(item);
-                    			if(item.getAmount() > l.getAmount()) {
-                    				// ...and add it back
-                    				tmp = new ItemStack(item);
-                    				tmp.setAmount(tmp.getAmount() - l.getAmount());
-                        			p.getInventory().addItem(tmp);
-                    			}
-                    			econ.depositPlayer(p.getName(), Double.valueOf(s.getLine(3).replace("$", "")));
-                    			p.sendMessage(ChatColor.GREEN + "Item sold.");
-                    			p.updateInventory();
-                    			return;
                     		}
                     	}
                     }
-            		p.sendMessage(ChatColor.RED + "You do not have enough items in your inventory.");
+                    if(amtavail < l.getAmount()) {
+                    	p.sendMessage(ChatColor.RED + "You do not have enough items in your inventory.");
+                    	return;
+                    }
+                    amtavail =- l.getAmount();
+        			// Check the amount carefully.
+        			if(amtavail > 0) {
+        				// ...and add it back if needed
+        				tmp = new ItemStack(l);
+        				tmp.setAmount(amtavail);
+            			p.getInventory().addItem(tmp);
+        			}
+        			econ.depositPlayer(p.getName(), Double.valueOf(s.getLine(3).replace("$", "")));
+        			p.sendMessage(ChatColor.GREEN + "Item sold.");
+        			p.updateInventory();
+        			return;
             	}
             }
         }

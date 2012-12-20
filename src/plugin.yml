@@ -5,8 +5,8 @@ permissions:
     simpleecosigns.*:
         description: Gives access to all SimpleEcoSigns features.
         children:
-           simpleecosigns.create: true
-           simpleecosigns.destroy: true
+            simpleecosigns.create: true
+            simpleecosigns.destroy: true
     simpleecosigns.create:
         description: Create SimpleEcoSigns signs
         default: op
