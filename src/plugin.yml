@@ -1,0 +1,15 @@
+name: SimpleEcoSigns
+main: com.tropicalwikis.tuxcraft.plugins.simpleecosigns.SimpleEcoSigns
+version: 0.1
+permissions:
+    simpleecosigns.*:
+        description: Gives access to all SimpleEcoSigns features.
+        children:
+           simpleecosigns.create: true
+           simpleecosigns.destroy: true
+    simpleecosigns.create:
+        description: Create SimpleEcoSigns signs
+        default: op
+    simpleecosigns.destroy:
+        description: Break SimpleEcoSigns signs
+        default: op
