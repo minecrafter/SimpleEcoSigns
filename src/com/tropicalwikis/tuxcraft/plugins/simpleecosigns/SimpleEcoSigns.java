@@ -142,53 +142,25 @@ public class SimpleEcoSigns extends JavaPlugin implements Listener {
             	}
             	if(s.getLine(0).matches(ChatColor.DARK_BLUE + "(?i)\\[Sell\\]")) {
             		// I have to do this backwards-ass way because Bukkit sucks.
-            		ItemStack[] i = p.getInventory().getContents();
-            		ItemStack l = nameToItemStack(s.getLine(2), Integer.valueOf(s.getLine(1)));
-            		ItemStack tmp;
-            		int amtavail = 0;
-                    for (ItemStack item : i) {
-                    	if(item != null) {
-                    		if(item.getType() == l.getType() && item.getDurability() == l.getDurability()) {
-                    			amtavail += item.getAmount();
-                    			p.getInventory().remove(item);
-                    		}
-                    	}
-                    }
-                    // Fix for a free-item bug
-                    if(amtavail == 0) {
-                    	p.sendMessage(ChatColor.RED + "You do not have enough items in your inventory.");
-                    	return;
-                    }
-                    if(amtavail < l.getAmount()) {
-                    	p.sendMessage(ChatColor.RED + "You do not have enough items in your inventory.");
-        				tmp = new ItemStack(l);
-        				tmp.setAmount(amtavail);
-            			p.getInventory().addItem(tmp);
+            		Integer amt = Integer.valueOf(s.getLine(1));
+            		Integer s2 = 0;
+            		ItemStack i = nameToItemStack(s.getLine(2), amt);
+            		if(!p.getInventory().containsAtLeast(i, amt)) {
+            			p.sendMessage(ChatColor.RED + "You don't have enough items in your inventory.");
+            			return;
+            		}
+            		for(ItemStack item : p.getInventory().getContents()) {
+            			if(item != null && item.isSimilar(i) && s2 < amt) {
+            				p.getInventory().removeItem(item);
+            				s2 = s2 + item.getAmount();
+            			}
+            		}
+            		p.updateInventory();
+            		if(s2 > amt) {
+            			s2 = s2 - amt;
+            			p.getInventory().addItem(new ItemStack(i.getTypeId(), s2, i.getDurability()));
             			p.updateInventory();
-                    	return;
-                    }
-                    //System.out.println("name = "+s.getLine(2) + " amt = " + amtavail + " estamt = " + (amtavail - l.getAmount()));
-                    amtavail = amtavail - l.getAmount();
-        			// Check the amount carefully.
-        			if(amtavail > 0) {
-        				if(amtavail > 64) {
-        					// More than 64 stacks! Oops.
-        					// Fix this.
-        					while(amtavail > 64) {
-        						amtavail = amtavail - 64;
-        						tmp = new ItemStack(l);
-                				tmp.setAmount(64);
-                    			p.getInventory().addItem(tmp);
-                    			tmp = null;
-        					}
-        					// Now that we have dealt with the 64-stacks, we will now credit the rest...
-        				}
-        				// ...and add it back if needed
-        				tmp = new ItemStack(l);
-        				tmp.setAmount(amtavail);
-        				p.getInventory().addItem(tmp);
-        				tmp = null;
-        			}
+            		}
         			econ.depositPlayer(p.getName(), Double.valueOf(s.getLine(3).replace("$", "")));
         			p.sendMessage(ChatColor.GREEN + "Item sold.");
         			p.updateInventory();
