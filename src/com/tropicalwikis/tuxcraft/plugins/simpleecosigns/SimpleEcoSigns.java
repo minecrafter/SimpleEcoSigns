@@ -126,17 +126,40 @@ public class SimpleEcoSigns extends JavaPlugin implements Listener {
                     		}
                     	}
                     }
-                    if(amtavail < l.getAmount()) {
+                    // Fix for a free-item bug
+                    if(amtavail == 0) {
                     	p.sendMessage(ChatColor.RED + "You do not have enough items in your inventory.");
                     	return;
                     }
-                    amtavail =- l.getAmount();
-        			// Check the amount carefully.
-        			if(amtavail > 0) {
-        				// ...and add it back if needed
+                    if(amtavail < l.getAmount()) {
+                    	p.sendMessage(ChatColor.RED + "You do not have enough items in your inventory.");
         				tmp = new ItemStack(l);
         				tmp.setAmount(amtavail);
             			p.getInventory().addItem(tmp);
+            			p.updateInventory();
+                    	return;
+                    }
+                    //System.out.println("name = "+s.getLine(2) + " amt = " + amtavail + " estamt = " + (amtavail - l.getAmount()));
+                    amtavail = amtavail - l.getAmount();
+        			// Check the amount carefully.
+        			if(amtavail > 0) {
+        				if(amtavail > 64) {
+        					// More than 64 stacks! Oops.
+        					// Fix this.
+        					while(amtavail > 64) {
+        						amtavail = amtavail - 64;
+        						tmp = new ItemStack(l);
+                				tmp.setAmount(64);
+                    			p.getInventory().addItem(tmp);
+                    			tmp = null;
+        					}
+        					// Now that we have dealt with the 64-stacks, we will now credit the rest...
+        				}
+        				// ...and add it back if needed
+        				tmp = new ItemStack(l);
+        				tmp.setAmount(amtavail);
+        				p.getInventory().addItem(tmp);
+        				tmp = null;
         			}
         			econ.depositPlayer(p.getName(), Double.valueOf(s.getLine(3).replace("$", "")));
         			p.sendMessage(ChatColor.GREEN + "Item sold.");
@@ -185,6 +208,9 @@ public class SimpleEcoSigns extends JavaPlugin implements Listener {
                 event.setCancelled(true);
                 return;
             }
+        }
+        if (event.getBlockAgainst().getState() instanceof Sign && blockIsValidEcoSign((Sign)event.getBlockAgainst().getState())) {
+        	event.setCancelled(true);
         }
     }
 
