@@ -26,13 +26,16 @@
  * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
+/*
+ * Some edits added by aabmass! 
+ */
+
 package com.tropicalwikis.tuxcraft.plugins.simpleecosigns;
 
-import java.io.BufferedReader;
 import java.io.File;
-import java.io.FileReader;
 import java.io.IOException;
 import java.util.HashMap;
+import java.util.Scanner;
 
 import net.milkbowl.vault.economy.Economy;
 
@@ -68,15 +71,21 @@ public class SimpleEcoSigns extends JavaPlugin implements Listener {
 		}
 		getServer().getPluginManager().registerEvents(this, this);
 		try {
-			BufferedReader r = new BufferedReader(new FileReader(new File(this.getDataFolder(), "items.csv")));
-			String sd = "";
-			while ((sd = r.readLine()) != null) {
-				if(!sd.contains("#")) {
-					String[] s = sd.split(",");
-					namesToIds.put(s[0].toLowerCase(), s[1] + ":" + s[2]);
+			File pluginFolder = this.getDataFolder();
+			if (!pluginFolder.exists()) {
+				pluginFolder.mkdir();
+			}
+			
+			Scanner scan = new Scanner(new File(pluginFolder, "items.csv"));
+			while (scan.hasNextLine()) {
+				String line = scan.nextLine();
+				String[] values = line.split(",");
+				if (!line.startsWith("#") && values.length == 3) {
+					namesToIds.put(values[0].toLowerCase(), values[1] + ":" + values[2]);
 				}
 			}
-			r.close();
+			getLogger().info("Successfully loaded items.csv!");
+			scan.close();
 		} catch (IOException e) {
 			getLogger().info("Could not load items.csv; this is okay. We will use Bukkit names for materials.");
 		}
