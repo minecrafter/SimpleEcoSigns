@@ -26,10 +26,6 @@
  * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-/*
- * Some edits added by aabmass! 
- */
-
 package com.tropicalwikis.tuxcraft.plugins.simpleecosigns;
 
 import java.io.File;
